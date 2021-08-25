@@ -22,6 +22,10 @@ body {
   align-items: center;
 }
 
+.search-form {
+  margin-right: 150px;
+}
+
 .form__label {
   font-family: 'Roboto', sans-serif;
   font-size: 1.2rem;
