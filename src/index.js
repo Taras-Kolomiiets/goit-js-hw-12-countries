@@ -3,10 +3,8 @@ import fetchCountries from './js/fetchCountries';
 import debounce from 'lodash/debounce';
 import CountryCardTpl from './templates/country-Card.hbs';
 import CountriesListTpl from './templates/countriesList.hbs';
-
 import { error } from '@pnotify/core';
 import '@pnotify/core/dist/BrightTheme.css';
-
 
 const refs = {
   searchForm: document.querySelector('.js-search-form'),
@@ -39,14 +37,16 @@ function onSearch(e) {
         onFetchError();
         return;
       }
+
+      clearCountriesContainer();
       error({
-    title: 'Oops!',
-    text: 'You entered a non-existent country.',
-    width: '300px',
-    delay: 2000,
-    sticker: false,
-    closer: false,
-    });
+        title: 'Oops!',
+        text: 'You entered a non-existent country.',
+        width: '300px',
+        delay: 2000,
+        sticker: false,
+        closer: false,
+       });
     })
   .catch(onFetchError)
 }
@@ -64,6 +64,7 @@ function clearCountriesContainer() {
 }
 
 function onFetchError() {
+  clearCountriesContainer();
   error({
     text: 'Too many matches found. Please enter a more specific query!',
     width: '300px',
