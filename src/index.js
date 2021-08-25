@@ -19,6 +19,7 @@ function onSearch(e) {
   const searchQuery = e.target.value;
 
   if (searchQuery === '') {
+    clearCountriesContainer();
     return;
   }
 
@@ -38,7 +39,16 @@ function onSearch(e) {
         onFetchError();
         return;
       }
+      error({
+    title: 'Oops!',
+    text: 'You entered a non-existent country.',
+    width: '300px',
+    delay: 2000,
+    sticker: false,
+    closer: false,
+    });
     })
+  .catch(onFetchError)
 }
 
 function renderCountriesList(countries) {
@@ -49,8 +59,16 @@ function renderCountryCard(countries) {
   refs.countriesList.innerHTML = CountryCardTpl(countries[0]);
 }
 
+function clearCountriesContainer() {
+  refs.countriesList.innerHTML = '';
+}
+
 function onFetchError() {
   error({
-  text: 'Too many matches found. Please enter a more specific query!'
+    text: 'Too many matches found. Please enter a more specific query!',
+    width: '300px',
+    delay: 2000,
+    sticker: false,
+    closer: false,
 });
 }
