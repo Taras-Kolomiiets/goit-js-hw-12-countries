@@ -1,62 +1,56 @@
 import './css/styles.css';
+import fetchCountries from './js/fetchCountries';
+import debounce from 'lodash/debounce';
+import CountryCardTpl from './templates/country-Card.hbs';
+import CountriesListTpl from './templates/countriesList.hbs';
 
-class CountdownTimer {
-  constructor({ selector, targetDate }) {
-    this.selector = selector;
-    this.targetDate = targetDate;
+import { error } from '@pnotify/core';
+import '@pnotify/core/dist/BrightTheme.css';
 
-    this.refs = {
-      days: document.querySelector('[data-value="days"]'),
-      hours: document.querySelector('[data-value="hours"]'),
-      mins: document.querySelector('[data-value="mins"]'),
-      secs: document.querySelector('[data-value="secs"]'),
-    }
-  }
 
-  startTimer() {
-    setInterval(() => {
-      const currentDate = Date.now();
-      const targetDate = this.targetDate.getTime();
-      const deltaTime = targetDate - currentDate;
-      const time = this.getTimeComponents(deltaTime);
-
-      this.updateTimer(time);
-
-       if (deltaTime < 0) {
-        this.refs.days.textContent = '00';
-        this.refs.hours.textContent = '00';
-        this.refs.mins.textContent = '00';
-        this.refs.secs.textContent = '00';
-      }
-    }, 1000);
-  }
-
-  getTimeComponents(time) {
-    const days = Math.floor(time / (1000 * 60 * 60 * 24));
-    const hours = this.pad(
-      Math.floor((time % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-    );
-    const mins = this.pad(Math.floor((time % (1000 * 60 * 60)) / (1000 * 60)));
-    const secs = this.pad(Math.floor((time % (1000 * 60)) / 1000));
-
-    return { days, hours, mins, secs };
-  }
-
-  pad(value) {
-    return String(value).padStart(2, '0');
-  }
-
-  updateTimer({ days, hours, mins, secs }) {
-    this.refs.days.textContent = `${days}`;
-    this.refs.hours.textContent = `${hours}`;
-    this.refs.mins.textContent = `${mins}`;
-    this.refs.secs.textContent = `${secs}`;
-  };
+const refs = {
+  searchForm: document.querySelector('.js-search-form'),
+  countriesList: document.querySelector('.js-card-container'),
 }
 
-const timer = new CountdownTimer({
-  selector: '#timer-1',
-  targetDate: new Date('Sep 17, 2021'),
-});
+refs.searchForm.addEventListener('input', debounce(onSearch, 500));
 
-timer.startTimer();
+function onSearch(e) {
+  const searchQuery = e.target.value;
+
+  if (searchQuery === '') {
+    return;
+  }
+
+  fetchCountries(searchQuery)
+    .then(countries => {
+      if (countries.length > 1 && countries.length <= 10) {
+        renderCountriesList(countries);
+        return;
+      }
+
+      if (countries.length === 1) {
+        renderCountryCard(countries);
+        return;
+      }
+
+      if (countries.length > 10) {
+        onFetchError();
+        return;
+      }
+    })
+}
+
+function renderCountriesList(countries) {
+  refs.countriesList.innerHTML = CountriesListTpl(countries);
+}
+
+function renderCountryCard(countries) {
+  refs.countriesList.innerHTML = CountryCardTpl(countries[0]);
+}
+
+function onFetchError() {
+  error({
+  text: 'Too many matches found. Please enter a more specific query!'
+});
+}
